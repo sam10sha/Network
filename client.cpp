@@ -43,6 +43,12 @@ int main(int argc, char** argv) {
     server.sin_addr.s_addr = inet_addr((const char *)ip_addr);
     server.sin_port = htons(atoi(portnum));
 
+    printf("\r\n");
+    printf("Make sure phone and computer are connected on same WiFi network\r\n");
+    printf("Enter \"d_vel [drain velocity]\" to send new drain velocity to phone\r\n");
+    printf("Make sure drain velocity < 5\r\n");
+    printf("Type \"halt\" to exit program\r\n");
+    printf("\r\n");
     while(strcmp(buffer, "halt")) {
         memset(buffer, 0, 100);
         printf(">>> ");
