@@ -2,6 +2,8 @@
 #include <string.h>
 #include <winsock2.h>
 
+#pragma comment(lib, "Ws2_32.lib")
+
 void replaceAll(char* str, char* oldstr, char* newstr);
 
 void replace(char *str, char *newstr, int index, int numOverwrite);
@@ -61,6 +63,8 @@ int main(int argc, char** argv) {
             printf("Connect response: %d\r\n", WSAGetLastError());
         send(client, buffer, strlen(buffer), 0);
     }
+
+    WSACleanup();
 
     return 0;
 }
