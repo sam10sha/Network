@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
     server.sin_addr.s_addr = inet_addr((const char *)ip_addr);
     server.sin_port = htons(atoi(portnum));
 
-    printf("\r\n");
+    /* printf("\r\n");
     printf("Make sure phone and computer are connected on same WiFi network\r\n");
     printf("Enter \"d_vel [drain velocity]\" to send new drain velocity to phone\r\n");
     printf("Make sure drain velocity < 5\r\n");
     printf("Type \"halt\" to exit program\r\n");
-    printf("\r\n");
+    printf("\r\n"); */
     while(strcmp(buffer, "halt")) {
         memset(buffer, 0, 100);
         printf(">>> ");
@@ -70,69 +70,39 @@ int main(int argc, char** argv) {
 }
 
 void replace(char *str, char *newstr, int index, int numOverwrite) {
-
     int i, extension, increment;
-
     extension = (int)strlen(newstr) - numOverwrite;
-
     if(extension) {
-
         if(extension > 0) {
-
             i = (int)strlen(str) - 1;
-
             increment = -1;
-
         }
-
         else {
-
             i = index + numOverwrite;
-
             increment = 1;
-
         }
-
 
         while(index+numOverwrite <= i && i < (int)strlen(str)) {
-
             str[i+extension] = str[i];
-
             /* printf("%s\r\n", str); */
-
             i += increment;
-
         }
-
         if(extension < 0)
-
             memset(str+(int)strlen(str)+extension, 0, extension * -1);
-
     }
-
     memcpy((void *)(str+index), (const void *)newstr, strlen(newstr));
-
 }
 
 
 
 void replaceAll(char* str, char* oldstr, char* newstr) {
-
     int i;
-
     char buffer[100];
 
-
     for(i = 0; i < strlen(str) - strlen(oldstr) + 1; i++) {
-
         memset(buffer, 0, strlen(buffer));
-
         memcpy((void *)buffer, (const void *)(str+i), strlen(oldstr));
-
         if(!strcmp(buffer, oldstr))
-
             replace(str, newstr, i, (int)strlen(oldstr));
-
     }
-
 }
