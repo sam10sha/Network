@@ -8,6 +8,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <vector>
 
 #endif // STDAFX_H

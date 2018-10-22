@@ -3,11 +3,10 @@
 
 
 // Public member functions
-bool CPPServer::Server::Initialize(const int PortNum, const int BacklogSize, void (*Output)(const std::string&))
+bool CPPServer::Server::Initialize(const int PortNum, void (*Output)(const std::string&))
 {
     bool SocketCreated = false;
     bool SocketBound = false;
-    bool InitSuccess = false;
     
     struct sockaddr_in ServerAddr;
     
@@ -17,32 +16,41 @@ bool CPPServer::Server::Initialize(const int PortNum, const int BacklogSize, voi
     SocketCreated = mSockFD > 0;
     if(SocketCreated == true)
     {
+        CreateAddrStruct(ServerAddr, PortNum);
         SocketBound = bind(mSockFD, (const struct sockaddr*)&ServerAddr, sizeof(ServerAddr)) == 0;
     }
-    if(SocketBound == true)
-    {
-        InitSuccess = listen(mSockFD, BacklogSize) < 0;
-    }
-    return InitSuccess;
+    return SocketBound;
 }
 
-void CPPServer::Server::Operate(const std::string& HaltMsg, void (*Output)(const std::string&)) const
+void CPPServer::Server::Operate(const int BacklogSize, const std::string& HaltMsg, void (*Output)(const std::string&)) const
 {
-    Output(std::string("Operating..."));
+    bool OperationStarted = false;
     int ClientFD = 0;
     struct sockaddr_in ClientAddr;
     socklen_t ClientAddrLen = sizeof(ClientAddr);
     std::string IncomingMsg;
     std::string ResponseMsg;
-    while(IncomingMsg.compare(HaltMsg) != 0)
+    
+    Output(std::string("Operating..."));
+
+    OperationStarted = listen(mSockFD, BacklogSize) == 0;
+    if(OperationStarted == true)
     {
-        ClientFD = accept(mSockFD, (sockaddr*)&ClientAddr, &ClientAddrLen);
-        if(ClientFD > 0)
+        while(IncomingMsg.compare(HaltMsg) != 0)
         {
-            ReadIncomingMsg(ClientFD, IncomingMsg);
-            DetermineClientIP(ClientAddr, ResponseMsg);
-            SendResponseMsg(ClientFD, ResponseMsg);
+            ClientFD = accept(mSockFD, (sockaddr*)&ClientAddr, &ClientAddrLen);
+            if(ClientFD > 0)
+            {
+                ReadIncomingMsg(ClientFD, IncomingMsg);
+                DetermineClientIP(ClientAddr, ResponseMsg);
+                SendResponseMsg(ClientFD, ResponseMsg);
+                shutdown(ClientFD, SHUT_RDWR);
+                close(ClientFD);
+            }
         }
+        
+        shutdown(mSockFD, SHUT_RDWR);
+        close(mSockFD);
     }
 }
 
@@ -50,11 +58,11 @@ void CPPServer::Server::Operate(const std::string& HaltMsg, void (*Output)(const
 
 
 // Private member functions
-void CPPServer::Server::CreateAddrStruct(struct sockaddr_in* const ServerAddr, const int PortNum) const
+void CPPServer::Server::CreateAddrStruct(struct sockaddr_in& ServerAddr, const int PortNum) const
 {
-    ServerAddr->sin_family = AF_INET;
-    ServerAddr->sin_port = htons(PortNum);
-    ServerAddr->sin_addr.s_addr = INADDR_ANY;
+    ServerAddr.sin_family = AF_INET;
+    ServerAddr.sin_port = htons(PortNum);
+    ServerAddr.sin_addr.s_addr = INADDR_ANY;
 }
 
 bool CPPServer::Server::ReadIncomingMsg(const int ClientFD, std::string& Msg) const
@@ -72,7 +80,7 @@ bool CPPServer::Server::ReadIncomingMsg(const int ClientFD, std::string& Msg) co
         SwitchEndianFormat(&MsgSize, sizeof(int));
         MsgBytes = new char[MsgSize + 1];
         std::memset(MsgBytes, 0, MsgSize + 1);
-        MsgReceived = recv(ClientFD, &MsgBytes, MsgSize, 0) > 0;
+        MsgReceived = recv(ClientFD, MsgBytes, MsgSize, 0) > 0;
         Msg.append(MsgBytes);
         delete[] MsgBytes;
     }

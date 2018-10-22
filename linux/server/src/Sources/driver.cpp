@@ -36,9 +36,9 @@ int main(int argc, char** argv)
     if(BacklogSizeParsed == true)
     {
         mServer = new CPPServer::Server();
-        if(mServer->Initialize(PortNum, BacklogSize, Printer) == true)
+        if(mServer->Initialize(PortNum, Printer) == true)
         {
-            mServer->Operate(std::string("halt"), Printer);
+            mServer->Operate(BacklogSize, std::string("halt"), Printer);
         }
         delete mServer;
     }
