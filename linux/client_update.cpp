@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
         memset(buffer, 0, 100);
         printf(">>> ");
         fgets(buffer, sizeof(buffer)-1, stdin);
-
+        buffer[strcspn(buffer, "\n")] = 0;
+        
         if(sendMessage(server, buffer, strlen(buffer)) < 0) {
             printf("Could not send message\n");
         }
